@@ -4,7 +4,6 @@ const AppError = require('../utils/AppError')
 
 class UsersController{
 
-    //create a user
     async create(request, response){
         const { name, email, password } = request.body
 
@@ -28,7 +27,6 @@ class UsersController{
 
     }
 
-    //delete a user by id from database
     async delete(request, response){
         const { id } = request.query
 
@@ -43,7 +41,6 @@ class UsersController{
         return response.json({message: `User Id ${id} deleted!`})
     }
 
-    //return a user's data by id
     async show(request, response){
         const { id } = request.params
 
@@ -61,7 +58,6 @@ class UsersController{
         })
     }
 
-    //return all users at database
     async index(request, response){
         const users = await knex('users')
         const usersData = users.map(user => {
