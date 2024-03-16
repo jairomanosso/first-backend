@@ -46,6 +46,12 @@ class MoveisController {
     async delete(request, response){
         const { id } = request.params
 
+        const [ movie ] = await knex('movies').where({ id })
+
+        if(!movie){
+            throw new AppError('movie not found', 404)
+        }
+
         await knex('movies').where({ id }).delete()
 
         return response.json({
@@ -56,9 +62,69 @@ class MoveisController {
     async show(request, response){
         const { id } = request.params
 
-        const movie = await knex('movies').where({ id })
-
+        const [ movie ] = await knex('movies').where({ id })
+        
+        if(!movie){
+            throw new AppError('movie not found', 404)
+        }
+        
+        
         response.json(movie)
+    }
+
+    async index(request, reponse){
+        const movies = await knex('movies')
+
+        const moviesList = movies.map(movie => {
+            return {
+                title: movie.title,
+                description: movie.description,
+                score: movie.score
+            }
+        })
+
+        return reponse.json(moviesList)
+    }
+
+    async update(request, response){
+        const { id } = request.params 
+        const { title, description, score, tags, user_id } = request.body
+
+        const [ movie ] = await knex('movies').where({ id })
+
+        if(!movie){
+            throw new AppError('movie not found', 404)
+        }
+
+        if(movie.user_id != user_id) {
+            throw new AppError('unauthorized, invalid credentials', 401)
+        }
+
+        if(title){
+            const [ titleMovieExists ] = await knex('movies').where({ title })
+
+            if(titleMovieExists && titleMovieExists.id !== movie.id){
+                throw new AppError('Title already registered')
+            }
+
+            await knex('movies').where({ id }).update({title})
+        }
+
+        if(description){
+            await knex('movies').where({ id }).update({ description })
+        }
+
+        if(score){
+            if(score < 0 || score> 5){
+                throw new AppError('score out range, 0 to 5')
+            }
+
+            await knex('movies').where({ id }).update({ score })
+        }
+
+        return response.json({
+            message: `movie data changed`
+        })
     }
 
 }
