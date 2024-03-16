@@ -6,5 +6,7 @@ const moviesController = new MoveisController()
 const moviesRoutes = express()
 
 moviesRoutes.post('/', moviesController.create)
+moviesRoutes.delete('/:id', moviesController.delete)
+moviesRoutes.get('/:id', moviesController.show)
 
 module.exports = moviesRoutes

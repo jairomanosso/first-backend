@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError')
 class MoveisController {
 
     async create(request, response){
-        const { title, description, score, user_id } = request.body
+        const { title, description, score, user_id, tags } = request.body
 
         const [checkMovieExists] = await knex('movies').where({ title })
         const [checkUserExists] = await knex('users').where({ id: user_id })
@@ -21,16 +21,44 @@ class MoveisController {
             throw new AppError('user not found!')
         }
 
-        await knex('movies').insert({
+        const [ movie_id ] = await knex('movies').insert({
             title,
             description,
             score,
             user_id
         })
 
+        const movieTags = tags.map(name => {
+            return {
+                movie_id,
+                user_id,
+                name
+            }
+        })
+
+        await knex('tags').insert(movieTags)
+
         return response.json({
             message: `movie ${title} registered!`
         })
+    }
+
+    async delete(request, response){
+        const { id } = request.params
+
+        await knex('movies').where({ id }).delete()
+
+        return response.json({
+            message: `movie id:${id} was deleted`
+        })
+    }
+
+    async show(request, response){
+        const { id } = request.params
+
+        const movie = await knex('movies').where({ id })
+
+        response.json(movie)
     }
 
 }
