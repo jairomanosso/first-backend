@@ -68,8 +68,15 @@ class MoveisController {
             throw new AppError('movie not found', 404)
         }
         
+        const tags = await knex('tags').where({movie_id: movie.id})
+        const tagsNames = tags.map(tag => {
+            return tag.name
+        })
         
-        response.json(movie)
+        response.json({
+            ...movie,
+            tags: tagsNames
+        })
     }
 
     async index(request, reponse){
@@ -77,6 +84,7 @@ class MoveisController {
 
         const moviesList = movies.map(movie => {
             return {
+                id: movie.id,
                 title: movie.title,
                 description: movie.description,
                 score: movie.score
@@ -120,6 +128,20 @@ class MoveisController {
             }
 
             await knex('movies').where({ id }).update({ score })
+        }
+
+        if(tags){
+            await knex('tags').where({movie_id: id}).delete()
+
+            const tagsToUpdate = tags.map(name => {
+                return {
+                    movie_id: id,
+                    user_id,
+                    name
+                }
+            })
+
+            await knex('tags').insert(tagsToUpdate)
         }
 
         return response.json({
