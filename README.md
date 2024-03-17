@@ -1,5 +1,5 @@
 Hello!
 
-Backend project with API under development.
+Backend project with API.
 
 I'm using Express and Knex
